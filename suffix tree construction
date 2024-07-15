@@ -1,0 +1,123 @@
+class SuffixTreeNode {
+  constructor() {
+    this.children = {};
+    this.start = -1;
+    this.end = { end: -1 };
+    this.suffixLink = null;
+  }
+}
+
+class SuffixTree {
+  constructor(text) {
+    this.text = text;
+    this.root = new SuffixTreeNode();
+    this.activeNode = this.root;
+    this.activeEdge = -1;
+    this.activeLength = 0;
+    this.remainingSuffixCount = 0;
+    this.leafEnd = { end: -1 };
+    this.size = -1; // Length of the input string
+    this.lastNewNode = null;
+
+    this.build();
+  }
+
+  build() {
+    this.size = this.text.length;
+    for (let i = 0; i < this.size; i++) {
+      this.extend(i);
+    }
+  }
+
+  extend(pos) {
+    this.leafEnd.end = pos;
+    this.remainingSuffixCount++;
+    this.lastNewNode = null;
+
+    while (this.remainingSuffixCount > 0) {
+      if (this.activeLength == 0) this.activeEdge = pos;
+
+      if (!this.activeNode.children[this.text[this.activeEdge]]) {
+        this.activeNode.children[this.text[this.activeEdge]] = new SuffixTreeNode();
+        this.activeNode.children[this.text[this.activeEdge]].start = pos;
+        this.activeNode.children[this.text[this.activeEdge]].end = this.leafEnd;
+
+        if (this.lastNewNode != null) {
+          this.lastNewNode.suffixLink = this.activeNode;
+          this.lastNewNode = null;
+        }
+      } else {
+        let next = this.activeNode.children[this.text[this.activeEdge]];
+        let edgeLength = next.end.end - next.start + 1;
+
+        if (this.activeLength >= edgeLength) {
+          this.activeEdge += edgeLength;
+          this.activeLength -= edgeLength;
+          this.activeNode = next;
+          continue;
+        }
+
+        if (this.text[next.start + this.activeLength] == this.text[pos]) {
+          if (this.lastNewNode != null && this.activeNode != this.root) {
+            this.lastNewNode.suffixLink = this.activeNode;
+            this.lastNewNode = null;
+          }
+          this.activeLength++;
+          break;
+        }
+
+        let split = new SuffixTreeNode();
+        split.start = next.start;
+        split.end = { end: next.start + this.activeLength - 1 };
+        this.activeNode.children[this.text[this.activeEdge]] = split;
+
+        split.children[this.text[pos]] = new SuffixTreeNode();
+        split.children[this.text[pos]].start = pos;
+        split.children[this.text[pos]].end = this.leafEnd;
+
+        next.start += this.activeLength;
+        split.children[this.text[next.start]] = next;
+
+        if (this.lastNewNode != null) {
+          this.lastNewNode.suffixLink = split;
+        }
+
+        this.lastNewNode = split;
+      }
+
+      this.remainingSuffixCount--;
+
+      if (this.activeNode == this.root && this.activeLength > 0) {
+        this.activeLength--;
+        this.activeEdge = pos - this.remainingSuffixCount + 1;
+      } else if (this.activeNode != this.root) {
+        this.activeNode = this.activeNode.suffixLink;
+      }
+    }
+  }
+
+  // Utility function to print the tree
+  printTree() {
+    this._printTree(this.root, 0, this.size);
+  }
+
+  _printTree(node, height, size) {
+    if (Object.keys(node.children).length == 0) {
+      console.log(`Leaf at height ${height}: ${size - height}`);
+      return;
+    }
+
+    for (let key in node.children) {
+      let child = node.children[key];
+      let start = child.start;
+      let end = child.end.end;
+      console.log(`${this.text.substring(start, end + 1)}`);
+      this._printTree(child, height + end - start + 1, size);
+    }
+  }
+}
+
+// Example usage
+const text = "banana";
+const suffixTree = new SuffixTree(text);
+suffixTree.printTree();

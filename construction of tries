@@ -1,0 +1,57 @@
+class TrieNode {
+  constructor() {
+    this.children = {}; // Object to hold child nodes
+    this.isEndOfWord = false; // Boolean to mark the end of a word
+  }
+}
+
+class Trie {
+  constructor() {
+    this.root = new TrieNode(); // Root node of the Trie
+  }
+
+  // Method to insert a word into the Trie
+  insert(word) {
+    let node = this.root; // Start from the root node
+    for (let char of word) {
+      if (!node.children[char]) {
+        node.children[char] = new TrieNode(); // Create a new node if it doesn't exist
+      }
+      node = node.children[char]; // Move to the next node
+    }
+    node.isEndOfWord = true; // Mark the end of the word
+  }
+
+  // Method to search for a word in the Trie
+  search(word) {
+    let node = this.root; // Start from the root node
+    for (let char of word) {
+      if (!node.children[char]) {
+        return false; // If the character is not found, the word does not exist in the Trie
+      }
+      node = node.children[char]; // Move to the next node
+    }
+    return node.isEndOfWord; // Return true if it's the end of a word, false otherwise
+  }
+
+  // Method to check if any word in the Trie starts with the given prefix
+  startsWith(prefix) {
+    let node = this.root; // Start from the root node
+    for (let char of prefix) {
+      if (!node.children[char]) {
+        return false; // If the character is not found, no word with the given prefix exists in the Trie
+      }
+      node = node.children[char]; // Move to the next node
+    }
+    return true; // If all characters of the prefix are found, return true
+  }
+}
+
+// Example usage:
+const trie = new Trie();
+trie.insert("apple");
+console.log(trie.search("apple"));   // Output: true
+console.log(trie.search("app"));     // Output: false
+console.log(trie.startsWith("app")); // Output: true
+trie.insert("app");
+console.log(trie.search("app"));     // Output: true

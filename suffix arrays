@@ -1,0 +1,55 @@
+// Function to construct a suffix array
+function buildSuffixArray(text) {
+  const suffixes = [];
+  const n = text.length;
+
+  // Generate all suffixes
+  for (let i = 0; i < n; i++) {
+    suffixes.push({
+      index: i,
+      suffix: text.substring(i),
+    });
+  }
+
+  // Sort the suffixes
+  suffixes.sort((a, b) => a.suffix.localeCompare(b.suffix));
+
+  // Extract and return the sorted indices
+  const suffixArray = suffixes.map(suffix => suffix.index);
+  return suffixArray;
+}
+
+// Function to search a pattern in the text using the suffix array
+function searchPattern(text, pattern, suffixArray) {
+  let left = 0;
+  let right = suffixArray.length - 1;
+  const m = pattern.length;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const suffix = text.substring(suffixArray[mid], suffixArray[mid] + m);
+
+    if (suffix === pattern) {
+      return suffixArray[mid];
+    } else if (suffix < pattern) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return -1; // Pattern not found
+}
+
+// Example usage
+const text = "banana";
+const suffixArray = buildSuffixArray(text);
+console.log("Suffix Array:", suffixArray);
+
+const pattern = "ana";
+const index = searchPattern(text, pattern, suffixArray);
+if (index !== -1) {
+  console.log(`Pattern '${pattern}' found at index: ${index}`);
+} else {
+  console.log(`Pattern '${pattern}' not found`);
+}
